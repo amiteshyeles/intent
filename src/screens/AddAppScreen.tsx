@@ -11,9 +11,6 @@ import {
   SafeAreaView,
   StatusBar,
   Modal,
-  Animated,
-  PanResponder,
-  Dimensions,
 } from 'react-native';
 import { StackScreenProps } from '@react-navigation/stack';
 import { NavigationScreens, AppConfig } from '../types';
@@ -35,120 +32,6 @@ type AppWithStatus = {
   isAdded: boolean;
   isCustom: boolean;
   appConfig?: AppConfig;
-};
-
-const SWIPE_THRESHOLD = 60;
-const SCREEN_WIDTH = Dimensions.get('window').width;
-
-const SwipeableAppItem: React.FC<{
-  app: AppWithStatus;
-  onDelete: () => void;
-  onPress: () => void;
-  onLongPress: () => void;
-  isSelected: boolean;
-  isSelectionMode: boolean;
-  children: React.ReactNode;
-}> = ({ app, onDelete, onPress, onLongPress, isSelected, isSelectionMode, children }) => {
-  const translateX = new Animated.Value(0);
-  const [isRevealed, setIsRevealed] = useState(false);
-
-  const panResponder = PanResponder.create({
-    onMoveShouldSetPanResponder: (evt, gestureState) => {
-      return Math.abs(gestureState.dx) > 10 && Math.abs(gestureState.dy) < 50;
-    },
-    onPanResponderMove: (evt, gestureState) => {
-      if (gestureState.dx < 0) { // Only allow left swipe
-        translateX.setValue(gestureState.dx);
-      }
-    },
-    onPanResponderRelease: (evt, gestureState) => {
-      if (gestureState.dx < -SWIPE_THRESHOLD) {
-        // Reveal delete button
-        setIsRevealed(true);
-        Animated.spring(translateX, {
-          toValue: -80,
-          useNativeDriver: true,
-        }).start();
-      } else {
-        // Snap back
-        setIsRevealed(false);
-        Animated.spring(translateX, {
-          toValue: 0,
-          useNativeDriver: true,
-        }).start();
-      }
-    },
-  });
-
-  const resetPosition = () => {
-    setIsRevealed(false);
-    Animated.spring(translateX, {
-      toValue: 0,
-      useNativeDriver: true,
-    }).start();
-  };
-
-  const handleDelete = () => {
-    Alert.alert(
-      'Delete Custom App',
-      `Are you sure you want to permanently delete ${app.name}? This cannot be undone.`,
-      [
-        { text: 'Cancel', style: 'cancel', onPress: resetPosition },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: () => {
-            resetPosition();
-            onDelete();
-          },
-        },
-      ]
-    );
-  };
-
-  // Only add swipe functionality to custom apps
-  if (!app.isCustom) {
-    return (
-      <TouchableOpacity
-        onPress={onPress}
-        onLongPress={onLongPress}
-        activeOpacity={0.7}
-      >
-        {children}
-      </TouchableOpacity>
-    );
-  }
-
-  return (
-    <View style={styles.swipeContainer}>
-      <View style={styles.deleteButtonContainer}>
-        <TouchableOpacity
-          style={styles.deleteButton}
-          onPress={handleDelete}
-          activeOpacity={0.7}
-        >
-          <Ionicons name="trash" size={20} color="white" />
-        </TouchableOpacity>
-      </View>
-      
-      <Animated.View
-        style={[
-          styles.swipeableItem,
-          { transform: [{ translateX }] }
-        ]}
-        {...panResponder.panHandlers}
-      >
-        <TouchableOpacity
-          onPress={onPress}
-          onLongPress={onLongPress}
-          activeOpacity={0.7}
-          style={{ flex: 1 }}
-        >
-          {children}
-        </TouchableOpacity>
-      </Animated.View>
-    </View>
-  );
 };
 
 const AddAppScreen: React.FC<AddAppScreenProps> = ({ navigation }) => {
@@ -542,90 +425,80 @@ const AddAppScreen: React.FC<AddAppScreenProps> = ({ navigation }) => {
         <View style={styles.content}>
           <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
             {allApps.map((app, index) => (
-              <SwipeableAppItem
+              <TouchableOpacity
                 key={app.id}
-                app={app}
-                onDelete={async () => {
-                  if (app.appConfig) {
-                    await storage.deleteAppConfig(app.appConfig.id);
-                    await loadExistingApps();
-                  }
-                }}
+                style={[
+                  styles.appItem,
+                  app.isAdded && styles.addedAppItem,
+                  isSelectionMode && selectedApps.has(app.id) && styles.selectedAppItem
+                ]}
                 onPress={() => handleSingleAppAction(app)}
                 onLongPress={() => handleLongPress(app.id)}
-                isSelected={selectedApps.has(app.id)}
-                isSelectionMode={isSelectionMode}
+                disabled={isLoading}
+                activeOpacity={0.7}
               >
-                <View
-                  style={[
-                    styles.appItem,
-                    app.isAdded && styles.addedAppItem,
-                    isSelectionMode && selectedApps.has(app.id) && styles.selectedAppItem
-                  ]}
-                >
-                  {isSelectionMode && (
-                    <View style={styles.selectionCircle}>
-                      {selectedApps.has(app.id) && (
-                        <Ionicons name="checkmark" size={14} color={colors.surface} />
-                      )}
-                    </View>
-                  )}
-                  
-                  <View style={styles.appIconContainer}>
-                    <Ionicons
-                      name={app.icon as any}
-                      size={20}
-                      color={app.isAdded ? colors.success : colors.primary}
-                    />
-                    {app.isCustom && (
-                      <View style={styles.customIndicator}>
-                        <Ionicons name="person" size={8} color={colors.surface} />
-                      </View>
+                {isSelectionMode && (
+                  <View style={styles.selectionCircle}>
+                    {selectedApps.has(app.id) && (
+                      <Ionicons name="checkmark" size={14} color={colors.surface} />
                     )}
                   </View>
-                  
-                  <View style={styles.appInfo}>
-                    <View style={styles.appNameRow}>
-                      <Text style={[styles.appName, app.isAdded && styles.addedAppName]}>
-                        {app.name}
-                      </Text>
-                      {app.isCustom && <Text style={styles.customLabel}>Custom</Text>}
+                )}
+                
+                <View style={styles.appIconContainer}>
+                  <Ionicons
+                    name={app.icon as any}
+                    size={20}
+                    color={app.isAdded ? colors.success : colors.primary}
+                  />
+                  {app.isCustom && (
+                    <View style={styles.customIndicator}>
+                      <Ionicons name="person" size={8} color={colors.surface} />
                     </View>
-                    <View style={styles.appMeta}>
-                      {!app.isCustom && (
-                        <View
-                          style={[
-                            styles.badge,
-                            { backgroundColor: getQuestionTypeBadgeColor(app.category) }
-                          ]}
-                        >
-                          <Text style={styles.badgeText}>
-                            {getDefaultQuestionType(app.category)}
-                          </Text>
-                        </View>
-                      )}
-                      <Text style={styles.appCategory}>
-                        {app.isCustom ? 'Personal app' : app.category}
-                      </Text>
-                    </View>
-                  </View>
-                  
-                  {!isSelectionMode && (
-                    <TouchableOpacity
-                      style={[
-                        styles.actionButton,
-                        app.isAdded ? (app.isCustom ? styles.deleteButton : styles.removeButton) : styles.addButton
-                      ]}
-                      onPress={() => handleSingleAppAction(app)}
-                      disabled={isLoading}
-                    >
-                      <Text style={styles.actionButtonText}>
-                        {app.isAdded ? (app.isCustom ? 'Delete' : 'Remove') : 'Add'}
-                      </Text>
-                    </TouchableOpacity>
                   )}
                 </View>
-              </SwipeableAppItem>
+                
+                <View style={styles.appInfo}>
+                  <View style={styles.appNameRow}>
+                    <Text style={[styles.appName, app.isAdded && styles.addedAppName]}>
+                      {app.name}
+                    </Text>
+                    {app.isCustom && <Text style={styles.customLabel}>Custom</Text>}
+                  </View>
+                  <View style={styles.appMeta}>
+                    {!app.isCustom && (
+                      <View
+                        style={[
+                          styles.badge,
+                          { backgroundColor: getQuestionTypeBadgeColor(app.category) }
+                        ]}
+                      >
+                        <Text style={styles.badgeText}>
+                          {getDefaultQuestionType(app.category)}
+                        </Text>
+                      </View>
+                    )}
+                    <Text style={styles.appCategory}>
+                      {app.isCustom ? 'Personal app' : app.category}
+                    </Text>
+                  </View>
+                </View>
+                
+                {!isSelectionMode && (
+                  <TouchableOpacity
+                    style={[
+                      styles.actionButton,
+                      app.isAdded ? (app.isCustom ? styles.deleteButton : styles.removeButton) : styles.addButton
+                    ]}
+                    onPress={() => handleSingleAppAction(app)}
+                    disabled={isLoading}
+                  >
+                    <Text style={styles.actionButtonText}>
+                      {app.isAdded ? (app.isCustom ? 'Delete' : 'Remove') : 'Add'}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </TouchableOpacity>
             ))}
           </ScrollView>
         </View>
@@ -1019,28 +892,6 @@ const styles = StyleSheet.create({
     marginLeft: spacing.sm,
     fontStyle: 'italic',
     flex: 1,
-  },
-  // Swipe styles
-  swipeContainer: {
-    position: 'relative',
-    marginBottom: spacing.md,
-  },
-  deleteButtonContainer: {
-    position: 'absolute',
-    right: 0,
-    top: 0,
-    bottom: 0,
-    width: 80,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: colors.error,
-    borderRadius: borderRadius.md,
-    marginLeft: spacing.md,
-  },
-  swipeableItem: {
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.md,
-    ...shadows.sm,
   },
 });
 
