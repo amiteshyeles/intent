@@ -719,7 +719,6 @@ const styles = StyleSheet.create({
   },
   appName: {
     ...typography.h5,
-    flex: 1,
   },
   addedAppName: {
     color: colors.success,
