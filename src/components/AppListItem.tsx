@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { AppListItemProps } from '../types';
 import { globalStyles, colors, spacing, borderRadius, typography } from '../styles/globalStyles';
+import ShortcutOnboardingModal from './ShortcutOnboardingModal';
 
 const AppListItem: React.FC<AppListItemProps> = ({
   app,
@@ -17,12 +18,18 @@ const AppListItem: React.FC<AppListItemProps> = ({
   onEdit,
   onDelete,
 }) => {
+  const [showOnboardingModal, setShowOnboardingModal] = useState(false);
+
   const handlePress = () => {
     onSettings(app.id);
   };
 
   const handleToggle = (value: boolean) => {
     onToggle(app.id, value);
+  };
+
+  const handleCreateShortcut = () => {
+    setShowOnboardingModal(true);
   };
 
   const getLastUsedText = () => {
@@ -50,63 +57,79 @@ const AppListItem: React.FC<AppListItemProps> = ({
   };
 
   return (
-    <TouchableOpacity
-      style={[globalStyles.listItem, !app.isEnabled && globalStyles.listItemDisabled, styles.container]}
-      onPress={handlePress}
-      activeOpacity={0.7}
-    >
-      <View style={styles.leftSection}>
-        <View style={styles.iconContainer}>
-          <Ionicons
-            name={app.icon as any}
-            size={18}
-            color={app.isEnabled ? colors.primary : colors.light}
-          />
-        </View>
-        
-        <View style={styles.appInfo}>
-          <Text style={[styles.appName, !app.isEnabled && styles.disabledText]}>
-            {app.name}
-          </Text>
+    <>
+      <TouchableOpacity
+        style={[globalStyles.listItem, !app.isEnabled && globalStyles.listItemDisabled, styles.container]}
+        onPress={handlePress}
+        activeOpacity={0.7}
+      >
+        <View style={styles.leftSection}>
+          <View style={styles.iconContainer}>
+            <Ionicons
+              name={app.icon as any}
+              size={18}
+              color={app.isEnabled ? colors.primary : colors.light}
+            />
+          </View>
           
-          <View style={styles.appDetails}>
-            <View
-              style={[
-                globalStyles.badge,
-                { backgroundColor: getQuestionTypeColor() }
-              ]}
-            >
-              <Text style={globalStyles.badgeText}>
-                {app.questionsType}
+          <View style={styles.appInfo}>
+            <Text style={[styles.appName, !app.isEnabled && styles.disabledText]}>
+              {app.name}
+            </Text>
+            
+            <View style={styles.appDetails}>
+              <View
+                style={[
+                  globalStyles.badge,
+                  { backgroundColor: getQuestionTypeColor() }
+                ]}
+              >
+                <Text style={globalStyles.badgeText}>
+                  {app.questionsType}
+                </Text>
+              </View>
+              
+              <Text style={styles.detailsText}>
+                {app.delaySeconds}s • {app.launchCount || 0} launches
               </Text>
             </View>
-            
-            <Text style={styles.detailsText}>
-              {app.delaySeconds}s • {app.launchCount || 0} launches
-            </Text>
           </View>
         </View>
-      </View>
-      
-      <View style={styles.rightSection}>
-        <Switch
-          value={app.isEnabled}
-          onValueChange={handleToggle}
-          trackColor={{ false: colors.lightest, true: colors.secondary }}
-          thumbColor={colors.surface}
-          ios_backgroundColor={colors.lightest}
-          style={styles.switch}
-        />
         
-        <TouchableOpacity
-          style={styles.settingsButton}
-          onPress={handlePress}
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-        >
-          <Ionicons name="chevron-forward" size={16} color={colors.light} />
-        </TouchableOpacity>
-      </View>
-    </TouchableOpacity>
+        <View style={styles.rightSection}>
+          <TouchableOpacity
+            style={styles.shortcutButton}
+            onPress={handleCreateShortcut}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <Ionicons name="share-outline" size={16} color={colors.primary} />
+          </TouchableOpacity>
+          
+          <Switch
+            value={app.isEnabled}
+            onValueChange={handleToggle}
+            trackColor={{ false: colors.lightest, true: colors.secondary }}
+            thumbColor={colors.surface}
+            ios_backgroundColor={colors.lightest}
+            style={styles.switch}
+          />
+          
+          <TouchableOpacity
+            style={styles.settingsButton}
+            onPress={handlePress}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <Ionicons name="chevron-forward" size={16} color={colors.light} />
+          </TouchableOpacity>
+        </View>
+      </TouchableOpacity>
+      
+      <ShortcutOnboardingModal
+        visible={showOnboardingModal}
+        appConfig={app}
+        onClose={() => setShowOnboardingModal(false)}
+      />
+    </>
   );
 };
 
@@ -154,6 +177,9 @@ const styles = StyleSheet.create({
   },
   switch: {
     transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }],
+  },
+  shortcutButton: {
+    padding: spacing.xs,
   },
   settingsButton: {
     padding: spacing.xs,

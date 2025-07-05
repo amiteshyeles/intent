@@ -1,7 +1,8 @@
-import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import React, { useRef, useEffect } from 'react';
+import { NavigationContainer, NavigationContainerRef } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { NavigationScreens } from '../types';
+import DeepLinkService from '../services/DeepLinkService';
 
 // Import screens (we'll create these next)
 import DashboardScreen from '../screens/DashboardScreen';
@@ -17,8 +18,18 @@ import AppSettingsScreen from '../screens/AppSettingsScreen';
 const Stack = createStackNavigator<NavigationScreens>();
 
 export default function AppNavigator() {
+  const navigationRef = useRef<NavigationContainerRef<NavigationScreens>>(null);
+
+  useEffect(() => {
+    // Set navigation ref for deep link handling
+    if (navigationRef.current) {
+      const deepLinkService = DeepLinkService.getInstance();
+      deepLinkService.setNavigationRef(navigationRef.current);
+    }
+  }, []);
+
   return (
-    <NavigationContainer>
+    <NavigationContainer ref={navigationRef}>
       <Stack.Navigator
         initialRouteName="Dashboard"
         screenOptions={{

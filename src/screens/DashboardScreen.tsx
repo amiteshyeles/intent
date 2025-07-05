@@ -8,6 +8,7 @@ import {
   Alert,
   RefreshControl,
   SafeAreaView,
+  Linking,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { AppConfig } from '../types';
@@ -16,6 +17,7 @@ import { NavigationScreens } from '../types';
 import { useFocusEffect } from '@react-navigation/native';
 import AppListItem from '../components/AppListItem';
 import StorageService from '../services/StorageService';
+import DeepLinkService from '../services/DeepLinkService';
 import { globalStyles, colors, spacing, typography } from '../styles/globalStyles';
 
 type DashboardScreenProps = {
@@ -35,9 +37,14 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
     navigation.setOptions({
       title: 'Intentional',
       headerRight: () => (
-        <TouchableOpacity onPress={handleSettings} style={styles.headerButton}>
-          <Ionicons name="settings-outline" size={24} color={colors.primary} />
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', gap: spacing.md }}>
+          <TouchableOpacity onPress={handleTestDeepLink} style={styles.headerButton}>
+            <Ionicons name="link-outline" size={24} color={colors.secondary} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleSettings} style={styles.headerButton}>
+            <Ionicons name="settings-outline" size={24} color={colors.primary} />
+          </TouchableOpacity>
+        </View>
       ),
     });
   }, [navigation, apps.length]);
@@ -73,6 +80,54 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
 
   const handleSettings = () => {
     navigation.navigate('Settings');
+  };
+
+  const handleTestDeepLink = async () => {
+    const deepLinkService = DeepLinkService.getInstance();
+    const testUrl = deepLinkService.generateTestDeepLink('Instagram');
+    
+    console.log('Generated test URL:', testUrl);
+    
+    // Test if we can handle custom URL schemes in Expo Go
+    try {
+      const canOpen = await Linking.canOpenURL(testUrl);
+      console.log('Can open URL:', canOpen);
+      
+      const buttons = [
+        { text: 'Cancel', style: 'cancel' as const },
+        {
+          text: 'Test Internal Handler',
+          onPress: () => {
+            // Test our internal deep link handler directly
+            console.log('Testing internal handler...');
+            deepLinkService['handleDeepLink'](testUrl);
+          },
+        },
+      ];
+
+      if (canOpen) {
+        buttons.push({
+          text: 'Test URL Opening',
+          onPress: async () => {
+            try {
+              await Linking.openURL(testUrl);
+            } catch (error) {
+              console.error('Failed to open URL:', error);
+              Alert.alert('Error', 'Failed to open URL: ' + error);
+            }
+          },
+        });
+      }
+
+      Alert.alert(
+        'Test Deep Link',
+        `Testing deep link: ${testUrl}\n\nCan open URL: ${canOpen}\n\nNote: In Expo Go, custom URL schemes might not work as expected. This works best in a standalone app build.`,
+        buttons
+      );
+    } catch (error) {
+      console.error('Error testing URL:', error);
+      Alert.alert('Error', 'Error testing URL: ' + error);
+    }
   };
 
   const handleToggleApp = async (appId: string, enabled: boolean) => {
