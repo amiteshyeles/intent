@@ -85,8 +85,10 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
   const handleTestDeepLink = async () => {
     const deepLinkService = DeepLinkService.getInstance();
     const testUrl = deepLinkService.generateTestDeepLink('Instagram');
+    const envInfo = deepLinkService.getEnvironmentInfo();
     
     console.log('Generated test URL:', testUrl);
+    console.log('Environment:', envInfo.description);
     
     // Test if we can handle custom URL schemes in Expo Go
     try {
@@ -121,7 +123,7 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
 
       Alert.alert(
         'Test Deep Link',
-        `Testing deep link: ${testUrl}\n\nCan open URL: ${canOpen}\n\nNote: In Expo Go, custom URL schemes might not work as expected. This works best in a standalone app build.`,
+        `Environment: ${envInfo.description}\n\nTesting deep link: ${testUrl}\n\nCan open URL: ${canOpen}\n\nNote: ${envInfo.isDevelopment ? 'In development mode, use "Test Internal Handler" to simulate the shortcut behavior.' : 'In production, both options should work.'}`,
         buttons
       );
     } catch (error) {

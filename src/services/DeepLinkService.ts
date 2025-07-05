@@ -2,6 +2,7 @@ import { Linking } from 'react-native';
 import { NavigationContainerRef } from '@react-navigation/native';
 import { NavigationScreens } from '../types';
 import StorageService from './StorageService';
+import Constants from 'expo-constants';
 
 interface DeepLinkParams {
   app?: string;
@@ -17,6 +18,39 @@ class DeepLinkService {
       DeepLinkService.instance = new DeepLinkService();
     }
     return DeepLinkService.instance;
+  }
+
+  // Check if we're in development environment
+  private isDevelopment(): boolean {
+    return __DEV__ || Constants.appOwnership === 'expo';
+  }
+
+  // Get the appropriate URL scheme for the current environment
+  private getUrlScheme(): string {
+    if (this.isDevelopment()) {
+      // For development, use exp:// with the manifest URL
+      const { manifest } = Constants;
+      if (manifest?.debuggerHost) {
+        const host = manifest.debuggerHost.split(':')[0];
+        return `exp://${host}:8081/--`;
+      }
+      return 'exp://localhost:8081/--';
+    }
+    return 'intentional://';
+  }
+
+  // Generate environment-appropriate deep link
+  generateDeepLink(path: string, params?: Record<string, string>): string {
+    const scheme = this.getUrlScheme();
+    const queryString = params ? '?' + new URLSearchParams(params).toString() : '';
+    
+    if (this.isDevelopment()) {
+      // For development: exp://host:port/--/path?params
+      return `${scheme}/${path}${queryString}`;
+    } else {
+      // For production: intentional://path?params
+      return `${scheme}${path}${queryString}`;
+    }
   }
 
   setNavigationRef(ref: NavigationContainerRef<NavigationScreens>) {
@@ -54,19 +88,51 @@ class DeepLinkService {
         this.navigateToDashboard();
       }
     } catch (error) {
-      console.error('Failed to handle deep link:', error);
-      this.navigateToDashboard();
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      
+      // Don't log errors for development URLs - they're expected
+      if (errorMessage === 'Development URL ignored') {
+        console.log('Ignoring development URL as expected');
+        return;
+      }
+      
+      // Log actual errors
+      console.error('Failed to handle deep link:', errorMessage);
+      
+      // Only navigate to dashboard for actual intentional:// URLs that failed
+      if (url.startsWith('intentional://')) {
+        this.navigateToDashboard();
+      }
     }
   };
 
   private parseDeepLink(url: string): DeepLinkParams {
-    // Parse URLs like: intentional://reflect?app=instagram
+    console.log('Parsing deep link:', url);
+    
     const urlParts = url.split('://');
-    if (urlParts.length < 2 || urlParts[0] !== 'intentional') {
+    if (urlParts.length < 2) {
       throw new Error('Invalid deep link format');
     }
 
-    const pathAndQuery = urlParts[1];
+    const scheme = urlParts[0];
+    let pathAndQuery = urlParts[1];
+    
+    // Handle different URL schemes
+    if (scheme === 'exp' || scheme === 'exps') {
+      // Development URLs: exp://host:port/--/reflect?app=instagram
+      const expParts = pathAndQuery.split('/--/');
+      if (expParts.length < 2) {
+        console.log('Ignoring non-deep-link Expo URL:', url);
+        throw new Error('Development URL ignored');
+      }
+      pathAndQuery = expParts[1]; // Get the part after /--/
+    } else if (scheme === 'intentional') {
+      // Production URLs: intentional://reflect?app=instagram
+      // pathAndQuery is already correct
+    } else {
+      throw new Error(`Unsupported URL scheme: ${scheme}`);
+    }
+
     const [path, query] = pathAndQuery.split('?');
     
     const params: DeepLinkParams = {};
@@ -186,7 +252,17 @@ class DeepLinkService {
   generateTestDeepLink(appName: string): string {
     // Convert app name to URL-friendly format
     const urlFriendlyName = appName.toLowerCase().replace(/\s+/g, '-');
-    return `intentional://reflect?app=${urlFriendlyName}`;
+    return this.generateDeepLink('reflect', { app: urlFriendlyName });
+  }
+
+  // Get environment info for display
+  getEnvironmentInfo(): { isDevelopment: boolean; scheme: string; description: string } {
+    const isDev = this.isDevelopment();
+    return {
+      isDevelopment: isDev,
+      scheme: this.getUrlScheme(),
+      description: isDev ? 'Development (Expo Go)' : 'Production (Standalone App)'
+    };
   }
 }
 

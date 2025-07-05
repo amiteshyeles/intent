@@ -1,5 +1,6 @@
 import { Linking, Share, Alert } from 'react-native';
 import { AppConfig } from '../types';
+import DeepLinkService from './DeepLinkService';
 
 interface ShortcutConfig {
   appName: string;
@@ -78,11 +79,15 @@ class ShortcutService {
     // Use the app name in lowercase with spaces replaced by hyphens for the URL
     const appUrlName = appConfig.name.toLowerCase().replace(/\s+/g, '-');
     
+    // Generate environment-appropriate deep link
+    const deepLinkService = DeepLinkService.getInstance();
+    const reflectionDeepLink = deepLinkService.generateDeepLink('reflect', { app: appUrlName });
+    
     return {
       appName: `Mindful ${appConfig.name}`,
       appId: appConfig.id,
       targetDeepLink: appConfig.deepLink,
-      reflectionDeepLink: `intentional://reflect?app=${appUrlName}`,
+      reflectionDeepLink: reflectionDeepLink,
       icon: appConfig.icon,
     };
   }

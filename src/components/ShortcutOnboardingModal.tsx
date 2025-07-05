@@ -14,6 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { AppConfig } from '../types';
 import { colors, spacing, borderRadius, shadows, typography } from '../styles/globalStyles';
 import ShortcutService from '../services/ShortcutService';
+import DeepLinkService from '../services/DeepLinkService';
 
 interface ShortcutOnboardingModalProps {
   visible: boolean;
@@ -53,11 +54,14 @@ const ShortcutOnboardingModal: React.FC<ShortcutOnboardingModalProps> = ({
 
   const shortcutService = ShortcutService.getInstance();
   const shortcutConfig = shortcutService['createShortcutConfig'](appConfig);
+  
+  const deepLinkService = DeepLinkService.getInstance();
+  const envInfo = deepLinkService.getEnvironmentInfo();
 
   const steps: OnboardingStep[] = [
     {
       title: 'Create Mindful Shortcut',
-      content: `We'll create a mindful shortcut for ${appConfig.name}. This shortcut will show reflection questions before opening the app.\n\nThis helps you pause and think before habitual app usage.`,
+      content: `We'll create a mindful shortcut for ${appConfig.name}. This shortcut will show reflection questions before opening the app.\n\nThis helps you pause and think before habitual app usage.\n\nEnvironment: ${envInfo.description}`,
     },
     {
       title: 'Open Shortcuts App',
@@ -73,7 +77,9 @@ const ShortcutOnboardingModal: React.FC<ShortcutOnboardingModalProps> = ({
     },
     {
       title: 'Set the URL',
-      content: `Now we need to set the URL that will trigger our reflection:\n\n1. Tap on "URL" in the shortcut\n2. Replace it with the URL below\n3. Make sure to copy it exactly`,
+      content: envInfo.isDevelopment 
+        ? `Now we need to set the URL that will trigger our reflection:\n\n1. Tap on "URL" in the shortcut\n2. Replace it with the URL below\n3. Make sure to copy it exactly\n\nNote: This is a development URL that works with Expo Go. In a production app, this would be a simpler intentional:// URL.`
+        : `Now we need to set the URL that will trigger our reflection:\n\n1. Tap on "URL" in the shortcut\n2. Replace it with the URL below\n3. Make sure to copy it exactly`,
       url: shortcutConfig.reflectionDeepLink,
     },
     {
@@ -90,7 +96,9 @@ const ShortcutOnboardingModal: React.FC<ShortcutOnboardingModalProps> = ({
     },
     {
       title: 'You\'re All Set!',
-      content: `Perfect! Your mindful ${appConfig.name} shortcut is ready.\n\nNow when you tap the shortcut, you'll see reflection questions before the app opens.\n\nThis helps create more intentional digital habits.`,
+      content: envInfo.isDevelopment 
+        ? `Perfect! Your mindful ${appConfig.name} shortcut is ready.\n\nNow when you tap the shortcut, you'll see reflection questions before the app opens.\n\nThis helps create more intentional digital habits.\n\nNote: Since you're using Expo Go, the shortcut will work while your development server is running.`
+        : `Perfect! Your mindful ${appConfig.name} shortcut is ready.\n\nNow when you tap the shortcut, you'll see reflection questions before the app opens.\n\nThis helps create more intentional digital habits.`,
       action: {
         text: 'Test Your Shortcut',
         onPress: () => shortcutService.testShortcut(appConfig),
