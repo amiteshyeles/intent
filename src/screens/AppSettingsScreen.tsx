@@ -386,16 +386,25 @@ const AppSettingsScreen: React.FC<AppSettingsScreenProps> = ({
         padSecondsWithZero={false}
         disableInfiniteScroll={true}
         secondInterval={5}
+        closeOnOverlayPress={true}
+        cancelButtonText="Cancel"
+        confirmButtonText="Done"
         styles={{
           theme: "light",
-          container: { backgroundColor: colors.surface },
-          contentContainer: { backgroundColor: colors.surface },
+          container: { 
+            backgroundColor: colors.surface,
+            borderRadius: borderRadius.lg,
+          },
+          contentContainer: { 
+            backgroundColor: colors.surface,
+          },
           cancelButton: { color: colors.medium },
           confirmButton: { color: colors.primary },
           modalTitle: { 
             color: colors.dark,
             fontSize: 18,
             fontWeight: '600',
+            textAlign: 'center',
           },
           pickerContainer: { backgroundColor: colors.surface },
           pickerItem: { 
@@ -431,16 +440,25 @@ const AppSettingsScreen: React.FC<AppSettingsScreenProps> = ({
         padSecondsWithZero={false}
         disableInfiniteScroll={true}
         secondInterval={5}
+        closeOnOverlayPress={true}
+        cancelButtonText="Cancel"
+        confirmButtonText="Done"
         styles={{
           theme: "light",
-          container: { backgroundColor: colors.surface },
-          contentContainer: { backgroundColor: colors.surface },
+          container: { 
+            backgroundColor: colors.surface,
+            borderRadius: borderRadius.lg,
+          },
+          contentContainer: { 
+            backgroundColor: colors.surface,
+          },
           cancelButton: { color: colors.medium },
           confirmButton: { color: colors.primary },
           modalTitle: { 
             color: colors.dark,
             fontSize: 18,
             fontWeight: '600',
+            textAlign: 'center',
           },
           pickerContainer: { backgroundColor: colors.surface },
           pickerItem: { 
