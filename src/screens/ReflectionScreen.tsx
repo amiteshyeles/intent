@@ -236,7 +236,7 @@ const ReflectionScreen: React.FC<ReflectionScreenProps> = ({
           onCancel={handleCancel}
           question={currentQuestion}
           appName={appConfig.name}
-          showBypassAfterSeconds={appConfig.allowBypass ? 10 : 999}
+          showBypassAfterSeconds={appConfig.allowBypass ? appConfig.bypassAfterSeconds : 999}
         />
       )}
       

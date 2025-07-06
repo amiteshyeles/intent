@@ -6,6 +6,7 @@ export interface AppConfig {
   isEnabled: boolean;
   delaySeconds: number;
   allowBypass: boolean;
+  bypassAfterSeconds: number;
   questionsType: 'default' | 'gratitude' | 'productivity' | 'mindfulness';
   lastLaunched?: Date;
   launchCount?: number;
