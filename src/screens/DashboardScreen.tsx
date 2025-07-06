@@ -8,7 +8,6 @@ import {
   Alert,
   RefreshControl,
   SafeAreaView,
-  Linking,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { AppConfig } from '../types';
@@ -17,7 +16,7 @@ import { NavigationScreens } from '../types';
 import { useFocusEffect } from '@react-navigation/native';
 import AppListItem from '../components/AppListItem';
 import StorageService from '../services/StorageService';
-import DeepLinkService from '../services/DeepLinkService';
+import ShortcutHelpModal from '../components/ShortcutHelpModal';
 import { globalStyles, colors, spacing, typography } from '../styles/globalStyles';
 
 type DashboardScreenProps = {
@@ -28,6 +27,7 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
   const [apps, setApps] = useState<AppConfig[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [showHelpModal, setShowHelpModal] = useState(false);
   
   const storage = StorageService.getInstance();
 
@@ -38,11 +38,11 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
       title: 'Intentional',
       headerRight: () => (
         <View style={{ flexDirection: 'row', gap: spacing.md }}>
-          <TouchableOpacity onPress={handleTestDeepLink} style={styles.headerButton}>
-            <Ionicons name="link-outline" size={24} color={colors.secondary} />
+          <TouchableOpacity onPress={handleShowHelp} style={styles.headerButton}>
+            <Ionicons name="help-circle-outline" size={24} color={colors.surface} />
           </TouchableOpacity>
           <TouchableOpacity onPress={handleSettings} style={styles.headerButton}>
-            <Ionicons name="settings-outline" size={24} color={colors.primary} />
+            <Ionicons name="settings-outline" size={24} color={colors.surface} />
           </TouchableOpacity>
         </View>
       ),
@@ -82,55 +82,13 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
     navigation.navigate('Settings');
   };
 
-  const handleTestDeepLink = async () => {
-    const deepLinkService = DeepLinkService.getInstance();
-    const testUrl = deepLinkService.generateTestDeepLink('Instagram');
-    const envInfo = deepLinkService.getEnvironmentInfo();
-    
-    console.log('Generated test URL:', testUrl);
-    console.log('Environment:', envInfo.description);
-    
-    // Test if we can handle custom URL schemes in Expo Go
-    try {
-      const canOpen = await Linking.canOpenURL(testUrl);
-      console.log('Can open URL:', canOpen);
-      
-      const buttons = [
-        { text: 'Cancel', style: 'cancel' as const },
-        {
-          text: 'Test Internal Handler',
-          onPress: () => {
-            // Test our internal deep link handler directly
-            console.log('Testing internal handler...');
-            deepLinkService['handleDeepLink'](testUrl);
-          },
-        },
-      ];
 
-      if (canOpen) {
-        buttons.push({
-          text: 'Test URL Opening',
-          onPress: async () => {
-            try {
-              await Linking.openURL(testUrl);
-            } catch (error) {
-              console.error('Failed to open URL:', error);
-              Alert.alert('Error', 'Failed to open URL: ' + error);
-            }
-          },
-        });
-      }
 
-      Alert.alert(
-        'Test Deep Link',
-        `Environment: ${envInfo.description}\n\nTesting deep link: ${testUrl}\n\nCan open URL: ${canOpen}\n\nNote: ${envInfo.isDevelopment ? 'In development mode, use "Test Internal Handler" to simulate the shortcut behavior.' : 'In production, both options should work.'}`,
-        buttons
-      );
-    } catch (error) {
-      console.error('Error testing URL:', error);
-      Alert.alert('Error', 'Error testing URL: ' + error);
-    }
+  const handleShowHelp = () => {
+    setShowHelpModal(true);
   };
+
+
 
   const handleToggleApp = async (appId: string, enabled: boolean) => {
     try {
@@ -265,6 +223,12 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
       <TouchableOpacity style={globalStyles.fab} onPress={handleAddApp}>
         <Ionicons name="add" size={24} color={colors.surface} />
       </TouchableOpacity>
+      
+      {/* Help Modal */}
+      <ShortcutHelpModal
+        visible={showHelpModal}
+        onClose={() => setShowHelpModal(false)}
+      />
     </SafeAreaView>
   );
 }

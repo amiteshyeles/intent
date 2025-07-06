@@ -9,7 +9,8 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { AppListItemProps } from '../types';
 import { globalStyles, colors, spacing, borderRadius, typography } from '../styles/globalStyles';
-import ShortcutOnboardingModal from './ShortcutOnboardingModal';
+import ShortcutSetupModal from './ShortcutSetupModal';
+import ShortcutService from '../services/ShortcutService';
 
 const AppListItem: React.FC<AppListItemProps> = ({
   app,
@@ -18,7 +19,10 @@ const AppListItem: React.FC<AppListItemProps> = ({
   onEdit,
   onDelete,
 }) => {
-  const [showOnboardingModal, setShowOnboardingModal] = useState(false);
+  const [showSetupModal, setShowSetupModal] = useState(false);
+  
+  const shortcutService = ShortcutService.getInstance();
+  const hasICloudShortcut = shortcutService.hasICloudShortcut(app);
 
   const handlePress = () => {
     onSettings(app.id);
@@ -29,7 +33,7 @@ const AppListItem: React.FC<AppListItemProps> = ({
   };
 
   const handleCreateShortcut = () => {
-    setShowOnboardingModal(true);
+    setShowSetupModal(true);
   };
 
   const getLastUsedText = () => {
@@ -97,13 +101,20 @@ const AppListItem: React.FC<AppListItemProps> = ({
         </View>
         
         <View style={styles.rightSection}>
-          <TouchableOpacity
-            style={styles.shortcutButton}
-            onPress={handleCreateShortcut}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          >
-            <Ionicons name="share-outline" size={16} color={colors.primary} />
-          </TouchableOpacity>
+                  <TouchableOpacity
+          style={styles.shortcutButton}
+          onPress={handleCreateShortcut}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        >
+          <View style={styles.shortcutButtonContent}>
+            <Ionicons 
+              name={hasICloudShortcut ? "cloud-download-outline" : "share-outline"} 
+              size={16} 
+              color={hasICloudShortcut ? colors.success : colors.primary} 
+            />
+            {hasICloudShortcut && <View style={styles.quickInstallBadge} />}
+          </View>
+        </TouchableOpacity>
           
           <Switch
             value={app.isEnabled}
@@ -124,10 +135,10 @@ const AppListItem: React.FC<AppListItemProps> = ({
         </View>
       </TouchableOpacity>
       
-      <ShortcutOnboardingModal
-        visible={showOnboardingModal}
+      <ShortcutSetupModal
+        visible={showSetupModal}
         appConfig={app}
-        onClose={() => setShowOnboardingModal(false)}
+        onClose={() => setShowSetupModal(false)}
       />
     </>
   );
@@ -180,6 +191,20 @@ const styles = StyleSheet.create({
   },
   shortcutButton: {
     padding: spacing.xs,
+  },
+  shortcutButtonContent: {
+    position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  quickInstallBadge: {
+    position: 'absolute',
+    top: -2,
+    right: -2,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: colors.success,
   },
   settingsButton: {
     padding: spacing.xs,
