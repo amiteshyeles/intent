@@ -26,7 +26,8 @@
     "react-native": "0.79.5",
     "react-native-safe-area-context": "^5.5.1",
     "react-native-screens": "^4.11.1",
-    "react-native-timer-picker": "^2.2.0"
+    "react-native-timer-picker": "^2.2.0",
+    "rn-tooltip": "^3.0.3"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

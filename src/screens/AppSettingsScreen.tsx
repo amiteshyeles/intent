@@ -12,6 +12,7 @@ import {
 import { StackScreenProps } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
 import { TimerPickerModal } from 'react-native-timer-picker';
+import Tooltip from 'rn-tooltip';
 import { NavigationScreens, AppConfig } from '../types';
 import StorageService from '../services/StorageService';
 import { colors, spacing, typography, borderRadius, shadows } from '../styles/globalStyles';
@@ -161,10 +162,6 @@ const AppSettingsScreen: React.FC<AppSettingsScreenProps> = ({
     }
   };
 
-  const showInfoAlert = (title: string, message: string) => {
-    Alert.alert(title, message, [{ text: 'OK' }]);
-  };
-
   const handleTimerLengthSelect = () => {
     setShowTimerPicker(true);
   };
@@ -229,12 +226,15 @@ const AppSettingsScreen: React.FC<AppSettingsScreenProps> = ({
               <View style={styles.settingInfo}>
                 <View style={styles.settingTitleRow}>
                   <Text style={styles.settingLabel}>Timer Length</Text>
-                  <TouchableOpacity 
-                    onPress={() => showInfoAlert('Timer Length', 'How long to pause before showing the reflection question')}
-                    style={styles.helpButton}
+                  <Tooltip
+                    popover={<Text style={styles.tooltipText}>How long to pause before showing the reflection question</Text>}
+                    backgroundColor={colors.primary}
+                    height={70}
+                    width={240}
+                    actionType="press"
                   >
                     <Ionicons name="help-circle-outline" size={16} color={colors.light} />
-                  </TouchableOpacity>
+                  </Tooltip>
                 </View>
               </View>
               <TouchableOpacity 
@@ -255,12 +255,15 @@ const AppSettingsScreen: React.FC<AppSettingsScreenProps> = ({
               <View style={styles.settingInfo}>
                 <View style={styles.settingTitleRow}>
                   <Text style={styles.settingLabel}>Allow Quick Bypass</Text>
-                  <TouchableOpacity 
-                    onPress={() => showInfoAlert('Quick Bypass', 'Show "I have a specific purpose" button during timer')}
-                    style={styles.helpButton}
+                  <Tooltip
+                    popover={<Text style={styles.tooltipText}>Show "I have a specific purpose" button during timer</Text>}
+                    backgroundColor={colors.primary}
+                    height={70}
+                    width={240}
+                    actionType="press"
                   >
                     <Ionicons name="help-circle-outline" size={16} color={colors.light} />
-                  </TouchableOpacity>
+                  </Tooltip>
                 </View>
               </View>
               <Switch
@@ -277,12 +280,15 @@ const AppSettingsScreen: React.FC<AppSettingsScreenProps> = ({
                   <View style={styles.settingInfo}>
                     <View style={styles.settingTitleRow}>
                       <Text style={styles.settingLabel}>Bypass Available After</Text>
-                      <TouchableOpacity 
-                        onPress={() => showInfoAlert('Bypass Timing', 'When the bypass button becomes available')}
-                        style={styles.helpButton}
+                      <Tooltip
+                        popover={<Text style={styles.tooltipText}>When the bypass button becomes available</Text>}
+                        backgroundColor={colors.primary}
+                        height={70}
+                        width={200}
+                        actionType="press"
                       >
                         <Ionicons name="help-circle-outline" size={16} color={colors.light} />
-                      </TouchableOpacity>
+                      </Tooltip>
                     </View>
                   </View>
                   <TouchableOpacity 
@@ -303,12 +309,15 @@ const AppSettingsScreen: React.FC<AppSettingsScreenProps> = ({
           <View style={styles.settingCard}>
             <View style={styles.settingTitleRow}>
               <Text style={styles.settingLabel}>Question Type</Text>
-              <TouchableOpacity 
-                onPress={() => showInfoAlert('Question Types', 'Default: General reflective questions\nGratitude: Appreciation and thankfulness\nProductivity: Goals and intentional action\nMindfulness: Present moment awareness')}
-                style={styles.helpButton}
+              <Tooltip
+                popover={<Text style={styles.tooltipText}>Default: General reflective questions{"\n"}Gratitude: Appreciation and thankfulness{"\n"}Productivity: Goals and intentional action{"\n"}Mindfulness: Present moment awareness</Text>}
+                backgroundColor={colors.primary}
+                height={110}
+                width={300}
+                actionType="press"
               >
-                <Ionicons name="help-circle-outline" size={16} color={colors.light} />
-              </TouchableOpacity>
+                <Ionicons name="help-circle-outline" size={16} color={colors.light} />                
+              </Tooltip>
             </View>
             
             <View style={styles.questionTypes}>
@@ -342,25 +351,7 @@ const AppSettingsScreen: React.FC<AppSettingsScreenProps> = ({
           </View>
         </View>
 
-        {/* Advanced Settings */}
-        <View style={styles.section}>
-          <View style={styles.settingCard}>
-            <TouchableOpacity style={styles.settingRow}>
-              <View style={styles.settingInfo}>
-                <View style={styles.settingTitleRow}>
-                  <Text style={styles.settingLabel}>Reset Usage Statistics</Text>
-                  <TouchableOpacity 
-                    onPress={() => showInfoAlert('Reset Statistics', 'Clear launch count and usage history for this app')}
-                    style={styles.helpButton}
-                  >
-                    <Ionicons name="help-circle-outline" size={16} color={colors.light} />
-                  </TouchableOpacity>
-                </View>
-              </View>
-              <Ionicons name="chevron-forward" size={16} color={colors.light} />
-            </TouchableOpacity>
-          </View>
-        </View>
+
 
         <View style={styles.bottomPadding} />
       </ScrollView>
@@ -636,6 +627,12 @@ const styles = StyleSheet.create({
   },
   bottomPadding: {
     height: spacing.xxxl,
+  },
+  tooltipText: {
+    color: colors.surface,
+    fontSize: 13,
+    lineHeight: 18,
+    textAlign: 'center',
   },
 });
 
