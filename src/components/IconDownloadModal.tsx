@@ -74,13 +74,17 @@ const IconDownloadModal: React.FC<IconDownloadModalProps> = ({
     );
   };
 
-  const selectAll = () => {
+  const toggleSelectAll = () => {
     const availableAppIds = availableIcons.filter(icon => icon.available).map(icon => icon.id);
-    setSelectedApps(availableAppIds);
-  };
-
-  const deselectAll = () => {
-    setSelectedApps([]);
+    const allSelected = selectedApps.length === availableAppIds.length && availableAppIds.length > 0;
+    
+    if (allSelected) {
+      // If all are selected, deselect all
+      setSelectedApps([]);
+    } else {
+      // If not all are selected, select all
+      setSelectedApps(availableAppIds);
+    }
   };
 
   const downloadToCameraRoll = async () => {
@@ -192,11 +196,12 @@ const IconDownloadModal: React.FC<IconDownloadModalProps> = ({
                 
                 {/* Selection Controls */}
                 <View style={styles.selectionControls}>
-                  <TouchableOpacity onPress={selectAll} style={styles.controlButton}>
-                    <Text style={styles.controlButtonText}>Select All</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={deselectAll} style={styles.controlButton}>
-                    <Text style={styles.controlButtonText}>Deselect All</Text>
+                  <TouchableOpacity onPress={toggleSelectAll} style={styles.controlButton}>
+                    <Text style={styles.controlButtonText}>
+                      {selectedApps.length === availableIcons.filter(icon => icon.available).length && availableIcons.filter(icon => icon.available).length > 0 
+                        ? 'Deselect All' 
+                        : 'Select All'}
+                    </Text>
                   </TouchableOpacity>
                 </View>
                 
@@ -233,7 +238,7 @@ const IconDownloadModal: React.FC<IconDownloadModalProps> = ({
                           {icon.name}
                         </Text>
                         <Text style={styles.appStatus}>
-                          {icon.available ? 'Icon available' : 'Icon not available'}
+                          {" • " + (icon.available ? 'Available' : 'Not available')}
                         </Text>
                       </View>
                       
@@ -261,41 +266,30 @@ const IconDownloadModal: React.FC<IconDownloadModalProps> = ({
               </ScrollView>
               
               {/* Download Buttons */}
-              {selectedCount > 0 && (
-                <View style={styles.downloadButtons}>
-                  <TouchableOpacity
-                    style={[styles.downloadButton, styles.cameraRollButton]}
-                    onPress={downloadToCameraRoll}
-                    disabled={isDownloading}
-                  >
-                    <Ionicons 
-                      name="camera" 
-                      size={20} 
-                      color={colors.surface} 
-                      style={styles.buttonIcon} 
-                    />
-                    <Text style={styles.downloadButtonText}>
-                      Save to Camera Roll
-                    </Text>
-                  </TouchableOpacity>
-                  
-                  <TouchableOpacity
-                    style={[styles.downloadButton, styles.filesButton]}
-                    onPress={downloadToFiles}
-                    disabled={isDownloading}
-                  >
-                    <Ionicons 
-                      name="document" 
-                      size={20} 
-                      color={colors.surface} 
-                      style={styles.buttonIcon} 
-                    />
-                    <Text style={styles.downloadButtonText}>
-                      Save to Files
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              )}
+              <View style={styles.downloadButtons}>
+                <TouchableOpacity
+                  style={[
+                    styles.downloadButton, 
+                    styles.filesButton,
+                    (selectedCount === 0 || isDownloading) && styles.downloadButtonDisabled
+                  ]}
+                  onPress={downloadToFiles}
+                  disabled={selectedCount === 0 || isDownloading}
+                >
+                  <Ionicons 
+                    name="download" 
+                    size={20} 
+                    color={selectedCount === 0 || isDownloading ? colors.light : colors.surface} 
+                    style={styles.buttonIcon} 
+                  />
+                  <Text style={[
+                    styles.downloadButtonText,
+                    (selectedCount === 0 || isDownloading) && styles.downloadButtonTextDisabled
+                  ]}>
+                    Save to Device
+                  </Text>
+                </TouchableOpacity>
+              </View>
               
               {isDownloading && (
                 <View style={styles.loadingOverlay}>
@@ -378,7 +372,7 @@ const styles = StyleSheet.create({
   },
   selectionControls: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     marginBottom: spacing.lg,
   },
   controlButton: {
@@ -425,6 +419,7 @@ const styles = StyleSheet.create({
   },
   appInfo: {
     flex: 1,
+    flexDirection: 'row',
   },
   appName: {
     ...typography.h6,
@@ -476,9 +471,6 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.sm,
     ...shadows.sm,
   },
-  cameraRollButton: {
-    backgroundColor: colors.primary,
-  },
   filesButton: {
     backgroundColor: colors.secondary,
   },
@@ -489,6 +481,13 @@ const styles = StyleSheet.create({
     ...typography.button,
     color: colors.surface,
     fontWeight: '600',
+  },
+  downloadButtonDisabled: {
+    backgroundColor: colors.lightest,
+    opacity: 0.6,
+  },
+  downloadButtonTextDisabled: {
+    color: colors.light,
   },
   loadingOverlay: {
     position: 'absolute',
