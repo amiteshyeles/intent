@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Alert, Linking } from 'react-native';
+import { View, StyleSheet, Alert, Linking, TouchableOpacity, Text } from 'react-native';
 import { StackScreenProps } from '@react-navigation/stack';
+import { Ionicons } from '@expo/vector-icons';
 import { NavigationScreens } from '../types';
 import CountdownTimer from '../components/CountdownTimer';
 import QuestionCard from '../components/QuestionCard';
 import StorageService from '../services/StorageService';
 import QuestionService from '../services/QuestionService';
+import { colors, spacing, typography } from '../styles/globalStyles';
 
 type ReflectionScreenProps = StackScreenProps<NavigationScreens, 'Reflection'>;
 
@@ -27,6 +29,30 @@ const ReflectionScreen: React.FC<ReflectionScreenProps> = ({
   useEffect(() => {
     initializeReflection();
   }, [appId]);
+
+  useEffect(() => {
+    // Set header options with cancel button
+    navigation.setOptions({
+      headerLeft: () => (
+        <TouchableOpacity
+          style={styles.headerButton}
+          onPress={handleCancel}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
+          <Ionicons name="close" size={24} color={colors.surface} />
+        </TouchableOpacity>
+      ),
+      headerTitle: appConfig ? `Reflecting on ${appConfig.name}` : 'Reflection',
+      headerStyle: {
+        backgroundColor: colors.primary,
+      },
+      headerTintColor: colors.surface,
+      headerTitleStyle: {
+        ...typography.h6,
+        fontWeight: '600',
+      },
+    });
+  }, [navigation, appConfig]);
 
   const initializeReflection = async () => {
     try {
@@ -136,6 +162,29 @@ const ReflectionScreen: React.FC<ReflectionScreenProps> = ({
     }
   };
 
+  const handleCancel = async () => {
+    try {
+      // Update reflection session to mark as cancelled
+      await updateReflectionSession({
+        cancelled: true,
+        endTime: new Date(),
+      });
+      
+      // Reset navigation stack to Dashboard (removes ability to go back)
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Dashboard' }],
+      });
+    } catch (error) {
+      console.error('Failed to cancel reflection:', error);
+      // Even on error, reset navigation stack
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Dashboard' }],
+      });
+    }
+  };
+
   const launchApp = async () => {
     try {
       // Update app config with last launched time
@@ -156,13 +205,19 @@ const ReflectionScreen: React.FC<ReflectionScreenProps> = ({
       // Launch the target app
       await Linking.openURL(targetDeepLink);
       
-      // Navigate back to dashboard
-      navigation.navigate('Dashboard');
+      // Reset navigation stack to Dashboard (removes ability to go back)
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Dashboard' }],
+      });
     } catch (error) {
       Alert.alert(
         'Cannot Open App',
         'Unable to open the app. Please make sure it is installed.',
-        [{ text: 'OK', onPress: () => navigation.navigate('Dashboard') }]
+        [{ text: 'OK', onPress: () => navigation.reset({
+          index: 0,
+          routes: [{ name: 'Dashboard' }],
+        }) }]
       );
     }
   };
@@ -178,6 +233,7 @@ const ReflectionScreen: React.FC<ReflectionScreenProps> = ({
           initialSeconds={appConfig.delaySeconds || 60}
           onComplete={handleCountdownComplete}
           onBypass={handleBypass}
+          onCancel={handleCancel}
           question={currentQuestion}
           appName={appConfig.name}
           showBypassAfterSeconds={appConfig.allowBypass ? 10 : 999}
@@ -189,6 +245,7 @@ const ReflectionScreen: React.FC<ReflectionScreenProps> = ({
           question={currentQuestion}
           appName={appConfig.name}
           onAnswer={handleQuestionAnswer}
+          onCancel={handleCancel}
           isOptional={true}
         />
       )}
@@ -200,6 +257,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F8F9FA',
+  },
+  headerButton: {
+    marginLeft: spacing.lg,
   },
 });
 

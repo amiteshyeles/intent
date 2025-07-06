@@ -13,16 +13,19 @@
     "@react-navigation/native": "^7.1.14",
     "@react-navigation/stack": "^7.4.2",
     "expo": "~53.0.17",
+    "expo-asset": "^11.1.7",
+    "expo-clipboard": "~7.1.5",
+    "expo-constants": "~17.1.7",
+    "expo-haptics": "~14.1.4",
     "expo-linking": "~7.1.7",
+    "expo-media-library": "^17.1.7",
+    "expo-sharing": "^13.1.5",
     "expo-status-bar": "~2.2.3",
     "expo-vector-icons": "^10.0.1",
     "react": "19.0.0",
     "react-native": "0.79.5",
     "react-native-safe-area-context": "^5.5.1",
-    "react-native-screens": "^4.11.1",
-    "expo-haptics": "~14.1.4",
-    "expo-clipboard": "~7.1.5",
-    "expo-constants": "~17.1.7"
+    "react-native-screens": "^4.11.1"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

@@ -16,6 +16,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
   question,
   appName,
   onAnswer,
+  onCancel,
   isOptional = true,
 }) => {
   const [answer, setAnswer] = useState('');
@@ -120,6 +121,18 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
               Your reflection is private and not stored
             </Text>
           </Animated.View>
+        )}
+        
+        {onCancel && (
+          <TouchableOpacity
+            style={styles.cancelButton}
+            onPress={onCancel}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.cancelButtonText}>
+              Cancel & Return to Dashboard
+            </Text>
+          </TouchableOpacity>
         )}
       </View>
     </View>
@@ -238,6 +251,20 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 16,
     fontStyle: 'italic',
+  },
+  cancelButton: {
+    backgroundColor: '#E74C3C',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 20,
+    marginTop: 20,
+    alignSelf: 'center',
+  },
+  cancelButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '500',
+    textAlign: 'center',
   },
 });
 

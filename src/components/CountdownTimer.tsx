@@ -17,6 +17,7 @@ const CountdownTimer: React.FC<CountdownTimerProps> = ({
   initialSeconds,
   onComplete,
   onBypass,
+  onCancel,
   question,
   appName,
   isPaused = false,
@@ -160,6 +161,16 @@ const CountdownTimer: React.FC<CountdownTimerProps> = ({
         </TouchableOpacity>
       )}
       
+      {onCancel && !isComplete && (
+        <TouchableOpacity
+          style={styles.cancelButton}
+          onPress={onCancel}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.cancelText}>Cancel & Return to Dashboard</Text>
+        </TouchableOpacity>
+      )}
+      
       {isComplete && (
         <View style={styles.completionContainer}>
           <Text style={styles.completionText}>
@@ -264,6 +275,19 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#7F8C8D',
     fontWeight: '500',
+  },
+  cancelButton: {
+    backgroundColor: '#E74C3C',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 25,
+    marginTop: 16,
+  },
+  cancelText: {
+    fontSize: 16,
+    color: '#FFFFFF',
+    fontWeight: '500',
+    textAlign: 'center',
   },
   completionContainer: {
     alignItems: 'center',

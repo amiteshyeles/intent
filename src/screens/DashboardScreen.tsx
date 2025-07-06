@@ -17,6 +17,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import AppListItem from '../components/AppListItem';
 import StorageService from '../services/StorageService';
 import ShortcutHelpModal from '../components/ShortcutHelpModal';
+import IconDownloadModal from '../components/IconDownloadModal';
 import { globalStyles, colors, spacing, typography } from '../styles/globalStyles';
 
 type DashboardScreenProps = {
@@ -28,6 +29,7 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [showHelpModal, setShowHelpModal] = useState(false);
+  const [showIconDownloadModal, setShowIconDownloadModal] = useState(false);
   
   const storage = StorageService.getInstance();
 
@@ -38,6 +40,9 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
       title: 'Intentional',
       headerRight: () => (
         <View style={{ flexDirection: 'row', gap: spacing.md }}>
+          <TouchableOpacity onPress={handleDownloadIcons} style={styles.headerButton}>
+            <Ionicons name="download-outline" size={24} color={colors.surface} />
+          </TouchableOpacity>
           <TouchableOpacity onPress={handleShowHelp} style={styles.headerButton}>
             <Ionicons name="help-circle-outline" size={24} color={colors.surface} />
           </TouchableOpacity>
@@ -86,6 +91,10 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
 
   const handleShowHelp = () => {
     setShowHelpModal(true);
+  };
+
+  const handleDownloadIcons = () => {
+    setShowIconDownloadModal(true);
   };
 
 
@@ -228,6 +237,13 @@ export default function DashboardScreen({ navigation }: DashboardScreenProps) {
       <ShortcutHelpModal
         visible={showHelpModal}
         onClose={() => setShowHelpModal(false)}
+      />
+      
+      {/* Icon Download Modal */}
+      <IconDownloadModal
+        visible={showIconDownloadModal}
+        apps={apps}
+        onClose={() => setShowIconDownloadModal(false)}
       />
     </SafeAreaView>
   );

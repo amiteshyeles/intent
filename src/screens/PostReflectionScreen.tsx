@@ -55,8 +55,11 @@ const PostReflectionScreen: React.FC<PostReflectionScreenProps> = ({
       // Launch the target app
       await Linking.openURL(targetDeepLink);
       
-      // Navigate back to dashboard
-      navigation.navigate('Dashboard');
+      // Reset navigation stack to Dashboard (removes ability to go back)
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Dashboard' }],
+      });
     } catch (error) {
       Alert.alert(
         'Cannot Open App',
@@ -69,8 +72,11 @@ const PostReflectionScreen: React.FC<PostReflectionScreenProps> = ({
   };
 
   const handleCancel = () => {
-    // Navigate back to dashboard
-    navigation.navigate('Dashboard');
+    // Reset navigation stack to Dashboard (removes ability to go back)
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'Dashboard' }],
+    });
   };
 
   const handleProductiveAlternative = async (deepLink: string, appName: string) => {
@@ -92,8 +98,11 @@ const PostReflectionScreen: React.FC<PostReflectionScreenProps> = ({
       // Launch the productive app
       await Linking.openURL(deepLink);
       
-      // Navigate back to dashboard
-      navigation.navigate('Dashboard');
+      // Reset navigation stack to Dashboard (removes ability to go back)
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Dashboard' }],
+      });
     } catch (error) {
       Alert.alert(
         'Cannot Open App',

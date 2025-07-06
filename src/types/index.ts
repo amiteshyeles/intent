@@ -107,6 +107,7 @@ export interface CountdownTimerProps {
   initialSeconds: number;
   onComplete: () => void;
   onBypass: () => void;
+  onCancel?: () => void;
   question: string;
   appName: string;
   isPaused?: boolean;
@@ -117,5 +118,6 @@ export interface QuestionCardProps {
   question: string;
   appName: string;
   onAnswer?: (answer: string) => void;
+  onCancel?: () => void;
   isOptional?: boolean;
 } 
