@@ -14,6 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { AppConfig } from '../types';
 import { colors, spacing, borderRadius, shadows, typography } from '../styles/globalStyles';
 import IconService from '../services/IconService';
+import PermissionService from '../services/PermissionService';
 
 interface IconDownloadModalProps {
   visible: boolean;
@@ -38,6 +39,7 @@ const IconDownloadModal: React.FC<IconDownloadModalProps> = ({
   const [availableIcons, setAvailableIcons] = useState<AppIcon[]>([]);
 
   const iconService = IconService.getInstance();
+  const permissionService = PermissionService.getInstance();
 
   useEffect(() => {
     if (visible) {
@@ -100,21 +102,27 @@ const IconDownloadModal: React.FC<IconDownloadModalProps> = ({
         return;
       }
 
+      // Check and request permission using the PermissionService
+      const hasPermission = await permissionService.requestPhotoPermissionWithAlert();
+      if (!hasPermission) {
+        return; // Permission denied, user was already shown appropriate alert
+      }
+
       const appNames = selectedIcons.map(icon => icon.name);
       const results = await iconService.batchSaveToCameraRoll(appNames);
 
       if (results.success > 0) {
         Alert.alert(
-          'Icons Saved',
-          `${results.success} app icon${results.success === 1 ? '' : 's'} saved to your camera roll in the "App Icons" album.${results.failed.length > 0 ? `\n\nFailed to save: ${results.failed.join(', ')}` : ''}`,
+          'Icons Saved to Photos',
+          `${results.success} app icon${results.success === 1 ? '' : 's'} saved to your Photos app in the "App Icons" album.${results.failed.length > 0 ? `\n\nFailed to save: ${results.failed.join(', ')}` : ''}`,
           [{ text: 'OK', onPress: onClose }]
         );
       } else {
-        Alert.alert('Error', 'Failed to save icons to camera roll.');
+        Alert.alert('Error', 'Failed to save icons to Photos. Please try again.');
       }
     } catch (error) {
-      console.error('Error saving to camera roll:', error);
-      Alert.alert('Error', 'Failed to save icons to camera roll.');
+      console.error('Error saving to Photos:', error);
+      Alert.alert('Error', 'Failed to save icons to Photos. Please try again.');
     } finally {
       setIsDownloading(false);
     }
@@ -138,16 +146,16 @@ const IconDownloadModal: React.FC<IconDownloadModalProps> = ({
 
       if (results.success > 0) {
         Alert.alert(
-          'Icons Shared',
-          `${results.success} app icon${results.success === 1 ? '' : 's'} shared successfully.${results.failed.length > 0 ? `\n\nFailed to share: ${results.failed.join(', ')}` : ''}`,
+          'Icons Saved to Files',
+          `${results.success} app icon${results.success === 1 ? '' : 's'} saved successfully.${results.failed.length > 0 ? `\n\nFailed to save: ${results.failed.join(', ')}` : ''}`,
           [{ text: 'OK', onPress: onClose }]
         );
       } else {
-        Alert.alert('Error', 'Failed to share icons.');
+        Alert.alert('Error', 'Failed to save icons to Files.');
       }
     } catch (error) {
-      console.error('Error sharing icons:', error);
-      Alert.alert('Error', 'Failed to share icons.');
+      console.error('Error saving to Files:', error);
+      Alert.alert('Error', 'Failed to save icons to Files.');
     } finally {
       setIsDownloading(false);
     }
@@ -191,7 +199,7 @@ const IconDownloadModal: React.FC<IconDownloadModalProps> = ({
               {/* Content */}
               <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false}>
                 <Text style={styles.description}>
-                  Download app icons to use when creating shortcuts on your home screen.
+                  Save app icons to your Photos app or Files app to use when creating shortcuts on your home screen.
                 </Text>
                 
                 {/* Selection Controls */}
@@ -270,6 +278,29 @@ const IconDownloadModal: React.FC<IconDownloadModalProps> = ({
                 <TouchableOpacity
                   style={[
                     styles.downloadButton, 
+                    styles.photosButton,
+                    (selectedCount === 0 || isDownloading) && styles.downloadButtonDisabled
+                  ]}
+                  onPress={downloadToCameraRoll}
+                  disabled={selectedCount === 0 || isDownloading}
+                >
+                  <Ionicons 
+                    name="images" 
+                    size={20} 
+                    color={selectedCount === 0 || isDownloading ? colors.light : colors.surface} 
+                    style={styles.buttonIcon} 
+                  />
+                  <Text style={[
+                    styles.downloadButtonText,
+                    (selectedCount === 0 || isDownloading) && styles.downloadButtonTextDisabled
+                  ]}>
+                    Save to Photos
+                  </Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity
+                  style={[
+                    styles.downloadButton, 
                     styles.filesButton,
                     (selectedCount === 0 || isDownloading) && styles.downloadButtonDisabled
                   ]}
@@ -286,14 +317,14 @@ const IconDownloadModal: React.FC<IconDownloadModalProps> = ({
                     styles.downloadButtonText,
                     (selectedCount === 0 || isDownloading) && styles.downloadButtonTextDisabled
                   ]}>
-                    Save to Device
+                    Save to Files
                   </Text>
                 </TouchableOpacity>
               </View>
               
               {isDownloading && (
                 <View style={styles.loadingOverlay}>
-                  <Text style={styles.loadingText}>Downloading icons...</Text>
+                  <Text style={styles.loadingText}>Saving icons...</Text>
                 </View>
               )}
             </View>
@@ -470,6 +501,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     borderRadius: borderRadius.sm,
     ...shadows.sm,
+  },
+  photosButton: {
+    backgroundColor: colors.primary,
   },
   filesButton: {
     backgroundColor: colors.secondary,

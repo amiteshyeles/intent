@@ -13,16 +13,15 @@ class IconService {
   // Icon map - maps app names to their require() calls
   private iconMap: IconMap = {
     'instagram': require('../../app_icons/instagram.png'),
-    // Add more icons as they become available
-    // 'tiktok': require('../../app_icons/tiktok.png'),
-    // 'youtube': require('../../app_icons/youtube.png'),
-    // 'facebook': require('../../app_icons/facebook.png'),
-    // 'twitter': require('../../app_icons/twitter.png'),
-    // 'snapchat': require('../../app_icons/snapchat.png'),
-    // 'whatsapp': require('../../app_icons/whatsapp.png'),
-    // 'telegram': require('../../app_icons/telegram.png'),
-    // 'discord': require('../../app_icons/discord.png'),
-    // 'reddit': require('../../app_icons/reddit.png'),
+    'tiktok': require('../../app_icons/tiktok.png'),
+    'youtube': require('../../app_icons/youtube.png'),
+    'facebook': require('../../app_icons/facebook.png'),
+    'twitter': require('../../app_icons/x.png'),
+    'snapchat': require('../../app_icons/snapchat.png'),
+    'whatsapp': require('../../app_icons/whatsapp.png'),
+    'telegram': require('../../app_icons/telegram.png'),
+    'discord': require('../../app_icons/discord.png'),
+    'reddit': require('../../app_icons/reddit.png'),
   };
 
   static getInstance(): IconService {
@@ -57,11 +56,7 @@ class IconService {
         throw new Error(`No icon available for ${appName}`);
       }
 
-      // Request permissions
-      const { status } = await MediaLibrary.requestPermissionsAsync();
-      if (status !== 'granted') {
-        throw new Error('Camera roll permission not granted');
-      }
+      // Permission should already be granted by the caller
 
       // Get the asset info
       const asset = Asset.fromModule(iconAsset);
@@ -92,12 +87,12 @@ class IconService {
           await MediaLibrary.createAlbumAsync('App Icons', mediaAsset, false);
         }
       } catch (albumError) {
-        console.log('Could not create album, icon saved to camera roll:', albumError);
+        console.log('Could not create album, icon saved to Photos:', albumError);
       }
 
       return true;
     } catch (error) {
-      console.error(`Failed to save ${appName} icon to camera roll:`, error);
+      console.error(`Failed to save ${appName} icon to Photos:`, error);
       return false;
     }
   }
@@ -140,6 +135,7 @@ class IconService {
   async batchSaveToCameraRoll(appNames: string[]): Promise<{ success: number; failed: string[] }> {
     const results = { success: 0, failed: [] as string[] };
     
+    // Permission should already be granted by the caller
     for (const appName of appNames) {
       const success = await this.saveIconToCameraRoll(appName);
       if (success) {

@@ -589,7 +589,7 @@ const AddAppScreen: React.FC<AddAppScreenProps> = ({ navigation }) => {
                   </View>
                 </View>
               </TouchableWithoutFeedback>
-            </View>
+    </View>
           </TouchableWithoutFeedback>
         </Modal>
       </SafeAreaView>
@@ -894,6 +894,6 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     flex: 1,
   },
-});
+}); 
 
 export default AddAppScreen; 
