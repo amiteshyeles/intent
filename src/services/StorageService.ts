@@ -119,6 +119,7 @@ class StorageService {
       temporaryDisableUntil: undefined,
       questionRotationEnabled: true,
       productiveAppsEnabled: true,
+      selectedProductiveApps: [],
       onboardingCompleted: false,
       darkModeEnabled: false,
       soundEnabled: true,

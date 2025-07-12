@@ -20,6 +20,7 @@ export interface GlobalSettings {
   temporaryDisableUntil?: Date;
   questionRotationEnabled: boolean;
   productiveAppsEnabled: boolean;
+  selectedProductiveApps: ProductiveApp[];
   onboardingCompleted: boolean;
   darkModeEnabled: boolean;
   soundEnabled: boolean;
@@ -90,6 +91,7 @@ export type NavigationScreens = {
     targetDeepLink: string;
   };
   Settings: undefined;
+  ProductiveAppsSettings: undefined;
   Onboarding: undefined;
   AppSettings: {
     appId: string;

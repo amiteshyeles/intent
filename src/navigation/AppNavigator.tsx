@@ -14,6 +14,7 @@ import PostReflectionScreen from '../screens/PostReflectionScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 import OnboardingScreen from '../screens/OnboardingScreen';
 import AppSettingsScreen from '../screens/AppSettingsScreen';
+import ProductiveAppsSettingsScreen from '../screens/ProductiveAppsSettingsScreen';
 
 const Stack = createStackNavigator<NavigationScreens>();
 
@@ -101,7 +102,15 @@ export default function AppNavigator() {
           component={SettingsScreen}
           options={{
             title: 'Settings',
-            presentation: 'modal',
+            headerBackTitle: 'Home',
+          }}
+        />
+        
+        <Stack.Screen
+          name="ProductiveAppsSettings"
+          component={ProductiveAppsSettingsScreen}
+          options={{
+            title: 'Productive Apps',
           }}
         />
         

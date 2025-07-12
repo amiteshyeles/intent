@@ -8,8 +8,8 @@ import {
   Linking,
 } from 'react-native';
 import { StackScreenProps } from '@react-navigation/stack';
-import { NavigationScreens } from '../types';
-import { getProductiveAlternatives } from '../data/apps';
+import { NavigationScreens, GlobalSettings } from '../types';
+import { getProductiveAlternativesFromUserPrefs } from '../data/apps';
 import StorageService from '../services/StorageService';
 
 type PostReflectionScreenProps = StackScreenProps<NavigationScreens, 'PostReflection'>;
@@ -112,7 +112,16 @@ const PostReflectionScreen: React.FC<PostReflectionScreenProps> = ({
     }
   };
 
-  const [globalSettings, setGlobalSettings] = useState({ productiveAppsEnabled: true });
+  const [globalSettings, setGlobalSettings] = useState<GlobalSettings>({
+    defaultDelay: 60,
+    enableAll: true,
+    questionRotationEnabled: true,
+    productiveAppsEnabled: true,
+    selectedProductiveApps: [],
+    onboardingCompleted: false,
+    darkModeEnabled: false,
+    soundEnabled: true,
+  });
   
   React.useEffect(() => {
     const loadSettings = async () => {
@@ -127,7 +136,7 @@ const PostReflectionScreen: React.FC<PostReflectionScreenProps> = ({
   }, []);
 
   const productiveAlternatives = globalSettings.productiveAppsEnabled 
-    ? getProductiveAlternatives(appName)
+    ? getProductiveAlternativesFromUserPrefs(globalSettings.selectedProductiveApps || [])
     : [];
 
   return (

@@ -256,6 +256,8 @@ export const getProductiveAppsByCategory = (category: string): ProductiveApp[] =
   return PRODUCTIVE_APPS.filter(app => app.category === category);
 };
 
+// This function will be updated to use user preferences
+// For now, it returns the default time-based suggestions
 export const getProductiveAlternatives = (blockedAppName: string): ProductiveApp[] => {
   const hour = new Date().getHours();
   
@@ -270,6 +272,16 @@ export const getProductiveAlternatives = (blockedAppName: string): ProductiveApp
       app.category === 'wellness' || app.category === 'learning' || app.category === 'creative'
     ).slice(0, 3);
   }
+};
+
+// New function that uses user preferences
+export const getProductiveAlternativesFromUserPrefs = (selectedApps: ProductiveApp[]): ProductiveApp[] => {
+  if (selectedApps && selectedApps.length > 0) {
+    return selectedApps.slice(0, 3);
+  }
+  
+  // Fallback to default time-based suggestions
+  return getProductiveAlternatives('');
 };
 
 export const searchApps = (query: string): PopularApp[] => {

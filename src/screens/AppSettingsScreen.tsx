@@ -121,7 +121,7 @@ const AppSettingsScreen: React.FC<AppSettingsScreenProps> = ({
     // Set header options
     navigation.setOptions({
       headerTitle: appConfig ? `${appConfig.name} Settings` : 'App Settings',
-      headerBackTitle: 'Back',
+      headerBackTitle: 'Home',
       headerStyle: {
         backgroundColor: colors.background,
       },
